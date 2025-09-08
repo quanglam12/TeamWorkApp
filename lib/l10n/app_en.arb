@@ -1,0 +1,49 @@
+{
+  "@@locale": "en",
+  "appTitle": "Teamwork App",
+  "welcome": "Welcome",
+  "settings": "Settings",
+  "login": "Login",
+  "logout": "Logout",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "name": "Name",
+  "confirmPassword": "Confirm Password",
+  "rememberPassword": "Remember Password",
+  "authPromptSignUp": "Don't have an account? Sign up",
+  "authPromptSignIn": "Already have an account? Sign in",
+  "confirm" : "Confirm",
+  "theme": "Theme",
+  "darkMode": "Dark mode",
+  "fontSize": "Font size",
+  "language": "Language",
+
+  "english": "English",
+  "vietnamese": "Vietnamese",
+
+  "loginSuccess": "Login successful!",
+  "loginFailed": "Invalid email or password!",
+  "registerSuccess": "Registration successful!",
+  "nameRequired": "Please enter your name",
+  "emailRequired": "Please enter your email",
+  "passwordRequired": "Please enter your password",
+  "passwordMismatch": "Passwords do not match",
+  "emailExists": "Email already exists!",
+  "updateSuccessMessage": "Information updated successfully!",
+  "completeProfile": "Complete your personal information",
+  "displayName": "Display name",
+  "systemTheme": "System",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+
+  "errorMessage": "Error: {error}",
+  "@errorMessage": {
+    "description": "Display generic error message with parameter",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

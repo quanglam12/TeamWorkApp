@@ -1,0 +1,49 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Ứng dụng Teamwork",
+  "welcome": "Chào mừng",
+  "settings": "Cài đặt",
+  "login": "Đăng nhập",
+  "logout": "Đăng xuất",
+  "register": "Đăng ký",
+  "email": "Email",
+  "password": "Mật khẩu",
+  "name": "Họ và tên",
+  "confirmPassword": "Xác nhận mật khẩu",
+  "rememberPassword": "Nhớ mật khẩu",
+  "authPromptSignUp": "Chưa có tài khoản? Đăng ký",
+  "authPromptSignIn": "Đã có tài khoản? Đăng nhập",
+  "confirm": "Xác nhận",
+  "theme": "Giao diện",
+  "darkMode": "Chế độ tối",
+  "fontSize": "Kích thước chữ",
+  "language": "Ngôn ngữ",
+
+  "english": "Tiếng Anh",
+  "vietnamese": "Tiếng Việt",
+
+  "loginSuccess": "Đăng nhập thành công!",
+  "loginFailed": "Email hoặc mật khẩu không đúng!",
+  "registerSuccess": "Đăng ký thành công!",
+  "nameRequired": "Vui lòng nhập tên",
+  "emailRequired": "Vui lòng nhập email",
+  "passwordRequired": "Vui lòng nhập mật khẩu",
+  "passwordMismatch": "Mật khẩu không khớp",
+  "emailExists": "Email đã tồn tại!",
+  "updateSuccessMessage": "Cập nhật thông tin thành công!",
+  "completeProfile": "Hoàn tất thông tin cá nhân",
+  "displayName": "Tên hiển thị",
+  "systemTheme": "Hệ thống",
+  "lightTheme": "Sáng",
+  "darkTheme": "Tối",
+
+  "errorMessage": "Lỗi: {error}",
+  "@errorMessage": {
+    "description": "Hiển thị thông báo lỗi chung với tham số",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}
