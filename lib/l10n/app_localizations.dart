@@ -149,6 +149,18 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get name;
 
+  /// No description provided for @avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar'**
+  String get avatar;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Should include uppercase, lowercase, numbers, and special characters'**
+  String get passwordHint;
+
   /// No description provided for @confirmPassword.
   ///
   /// In en, this message translates to:
@@ -172,6 +184,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already have an account? Sign in'**
   String get authPromptSignIn;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid Email'**
+  String get invalidEmail;
 
   /// No description provided for @confirm.
   ///
@@ -202,6 +220,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get language;
+
+  /// No description provided for @setDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set default'**
+  String get setDefault;
 
   /// No description provided for @english.
   ///
@@ -266,8 +290,14 @@ abstract class AppLocalizations {
   /// No description provided for @updateSuccessMessage.
   ///
   /// In en, this message translates to:
-  /// **'Information updated successfully!'**
+  /// **'Updated successfully!'**
   String get updateSuccessMessage;
+
+  /// No description provided for @updatePasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated password successfully!'**
+  String get updatePasswordSuccess;
 
   /// No description provided for @completeProfile.
   ///
@@ -298,6 +328,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get darkTheme;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfile;
+
+  /// No description provided for @passwordWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak. Please enter a stronger password.'**
+  String get passwordWeak;
+
+  /// No description provided for @notLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not logged in'**
+  String get notLoggedIn;
+
+  /// No description provided for @weak.
+  ///
+  /// In en, this message translates to:
+  /// **'Weak'**
+  String get weak;
+
+  /// No description provided for @medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get medium;
+
+  /// No description provided for @strong.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get strong;
+
+  /// No description provided for @chooseAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose\navatar'**
+  String get chooseAvatar;
+
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @dob.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dob;
+
+  /// No description provided for @job.
+  ///
+  /// In en, this message translates to:
+  /// **'Position / Occupation'**
+  String get job;
+
+  /// No description provided for @oldPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Old Password'**
+  String get oldPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePassword;
+
+  /// No description provided for @cannotLoadUserInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load user information'**
+  String get cannotLoadUserInfo;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @createdBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by'**
+  String get createdBy;
+
+  /// No description provided for @task.
+  ///
+  /// In en, this message translates to:
+  /// **'Task'**
+  String get task;
+
+  /// No description provided for @files.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get files;
+
+  /// No description provided for @information.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get information;
+
+  /// No description provided for @notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notification;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @group_name_cannot_be_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name cannot be empty'**
+  String get group_name_cannot_be_empty;
+
+  /// No description provided for @group_created_successfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Group created successfully'**
+  String get group_created_successfully;
+
+  /// No description provided for @group_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Group Name *'**
+  String get group_name;
+
+  /// No description provided for @description_optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get description_optional;
+
+  /// No description provided for @create_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Group'**
+  String get create_group;
+
+  /// No description provided for @group_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Group List'**
+  String get group_list;
+
+  /// No description provided for @create_new_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Group'**
+  String get create_new_group;
+
+  /// No description provided for @members.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get members;
+
+  /// No description provided for @editGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get editGroup;
+
+  /// No description provided for @manageMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage members'**
+  String get manageMembers;
+
+  /// No description provided for @pinGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin group'**
+  String get pinGroup;
+
+  /// No description provided for @deleteGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get deleteGroup;
+
+  /// No description provided for @memberList.
+  ///
+  /// In en, this message translates to:
+  /// **'Member list'**
+  String get memberList;
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Group'**
+  String get leaveGroup;
 
   /// Display generic error message with parameter
   ///
