@@ -58,6 +58,7 @@
   "changePassword": "Đổi mật khẩu",
   "cannotLoadUserInfo": "Không thể tải thông tin người dùng",
   "save": "Lưu",
+  "description": "Mô tả",
 
   "notification": "Thông báo",
   "close": "Đóng",

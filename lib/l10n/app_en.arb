@@ -63,6 +63,7 @@
   "task": "Task",
   "files": "Files",
   "information": "Information",
+  "description": "Description",
 
   "notification": "Notification",
   "close": "Close",

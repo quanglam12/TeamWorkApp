@@ -1,3 +1,3 @@
 class AppConstants {
-  static const String apiBaseUrl = "https://a1d4a8b92332.ngrok-free.app";
+  static const String apiBaseUrl = "https://b8c3e4a49745.ngrok-free.app";
 }

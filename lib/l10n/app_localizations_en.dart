@@ -192,6 +192,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get information => 'Information';
 
   @override
+  String get description => 'Description';
+
+  @override
   String get notification => 'Notification';
 
   @override

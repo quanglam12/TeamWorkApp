@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,8 @@ import 'package:teamworkapp/l10n/app_localizations.dart';
 
 import 'constants.dart';
 import 'auth_provider.dart';
+import 'taskdetail_page.dart';
+import 'filedetail_page.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final int groupId;
@@ -709,6 +712,101 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       },
     );
   }
+
+  Future<void> showLeaveGroupDialog(BuildContext context, int groupId, VoidCallback? onLeaved) async {
+    final controller = TextEditingController();
+
+    // Tạo một số ngẫu nhiên từ 0 đến 9
+    final rnd = Random();
+    final confirmationCode = rnd.nextInt(10).toString();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Xác nhận rời nhóm', style: TextStyle(color: Colors.red)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Bạn có chắc chắn muốn rời nhóm?'),
+              const SizedBox(height: 12),
+              Text(
+                'Nhập đúng mã xác nhận bên dưới để rời nhóm:',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                confirmationCode,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Nhập mã xác nhận',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                if (controller.text != confirmationCode) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Mã xác nhận không đúng')),
+                  );
+                  return;
+                }
+
+                // Gọi API rời nhóm
+                final token = context.read<AuthProvider>().token;
+                final url = Uri.parse('${AppConstants.apiBaseUrl}/api/groups/$groupId/leave');
+
+                final response = await http.delete(
+                  url,
+                  headers: {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer $token',
+                  },
+                );
+
+                if (!context.mounted) return;
+
+                if (response.statusCode == 200) {
+                  final res = jsonDecode(response.body);
+                  if (res['status'] == true) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Bạn đã rời nhóm thành công')),
+                    );
+                    Navigator.pop(ctx);
+                    if (onLeaved != null) onLeaved();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(res['message'] ?? 'Có lỗi xảy ra')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi ${response.statusCode}')),
+                  );
+                }
+              },
+              child: const Text('Rời nhóm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
   @override
   void dispose() {
     _tabController.dispose();
@@ -719,7 +817,10 @@ class _GroupDetailPageState extends State<GroupDetailPage>
   Widget build(BuildContext context) {
     final currentUserId = context.read<AuthProvider>().userId;
     final data = groupData ?? {};
-    final isAdmin = data['createdBy']?['id'] == currentUserId;
+    final isAdmin = (data['members'] as List<dynamic>).any(
+              (member) => member['user_id'] == currentUserId && member['role'] == 'admin',
+        );
+    final isOwner = data['createdBy']?['id'] == currentUserId;
     final name = data['name'] ?? AppLocalizations.of(context)!.loading;
     final description = data['description'] ?? '';
     final avatarUrl =
@@ -727,8 +828,28 @@ class _GroupDetailPageState extends State<GroupDetailPage>
     final membersCount = data['members_count'] ?? 0;
     final createdBy = data['createdBy']?['name'] ?? '';
 
-    List<PopupMenuEntry<String>> buildMenuItems(bool isAdmin) {
-      if (isAdmin) {
+    List<PopupMenuEntry<String>> buildMenuItems(bool isAdmin, bool isOwner) {
+      if(isOwner){
+        return [
+          PopupMenuItem(
+            value: 'edit',
+            child: Text(AppLocalizations.of(context)!.editGroup),
+          ),
+          PopupMenuItem(
+            value: 'members',
+            child: Text(AppLocalizations.of(context)!.manageMembers),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: 'pin',
+            child: Text(AppLocalizations.of(context)!.pinGroup),
+          ),
+          PopupMenuItem(
+            value: 'delete',
+            child: Text(AppLocalizations.of(context)!.deleteGroup),
+          ),
+        ];
+      } else if (isAdmin) {
         return [
           PopupMenuItem(
             value: 'edit',
@@ -744,8 +865,8 @@ class _GroupDetailPageState extends State<GroupDetailPage>
               child: Text(AppLocalizations.of(context)!.pinGroup),
           ),
           PopupMenuItem(
-            value: 'delete',
-            child: Text(AppLocalizations.of(context)!.deleteGroup),
+            value: 'leave',
+            child: Text(AppLocalizations.of(context)!.leaveGroup),
           ),
         ];
       } else {
@@ -793,11 +914,13 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                   });
                   break;
                 case 'leave':
-                // TODO: rời nhóm
+                  showLeaveGroupDialog(context, groupData?['id'], (){
+                    Navigator.pop(context);
+                  });
                   break;
               }
             },
-            itemBuilder: (context) => buildMenuItems(isAdmin),
+            itemBuilder: (context) => buildMenuItems(isAdmin, isOwner),
           ),
         ],
       ),
@@ -911,13 +1034,95 @@ class _GroupDetailPageState extends State<GroupDetailPage>
     );
   }
 
+
   Widget _buildFilesTab() {
-    return const Center(child: Text('Danh sách Files...'));
+    return FilesTab(groupId: groupData?['id']);
   }
 
+
+
   Widget _buildInfoTab(Map<String, dynamic> data) {
-    return Center(
-      child: Text('Thông tin thêm về nhóm:\n${data.toString()}'),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tiêu đề
+          Text(
+            data['name'],
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueAccent,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Mô tả nhóm
+          Text(
+            'Mô tả: ${data['description']}',
+            style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+          ),
+          const SizedBox(height: 8),
+
+          // Người tạo
+          Text(
+            'Được tạo bởi: ${data['createdBy']['name']}',
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+
+          // Thống kê thành viên
+          Text(
+            'Tổng số thành viên: ${data['members_count']}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Danh sách thành viên
+          const Text(
+            'Danh sách thành viên:',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.builder(
+              itemCount: data['members'].length,
+              itemBuilder: (context, index) {
+                final member = data['members'][index];
+                final String memberName = member['user']['name'];
+                final String role = member['role'];
+                return Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    title: Text(
+                      memberName,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      'Vai trò: ${role.replaceFirst(role[0], role[0].toUpperCase())}',
+                    ),
+                    leading: CircleAvatar(
+                    radius: 10,
+                    backgroundImage: member['user']['avturl'] != null
+                        ? NetworkImage('${AppConstants.apiBaseUrl}/storage/${member['user']['avturl']}')
+                        : const AssetImage('assets/images/avtUdefault.png')
+                    as ImageProvider,
+                  ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1472,7 +1677,12 @@ class _TasksTabState extends State<TasksTab> {
                   )
                       : null,
                   onTap: () {
-                    // TODO mở trang chi tiết task
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TaskDetailPage(task: task, groupId: groupData?['id']),
+                      ),
+                    );
                   },
                 ),
               );
@@ -1480,6 +1690,256 @@ class _TasksTabState extends State<TasksTab> {
           );
         },
       ),
+    );
+  }
+}
+
+class FilesTab extends StatefulWidget {
+  final int? groupId;
+  const FilesTab({super.key, required this.groupId});
+
+  @override
+  State<FilesTab> createState() => _FilesTabState();
+}
+
+class _FilesTabState extends State<FilesTab> {
+  List<Map<String, dynamic>> files = [];
+  bool isLoading = false;
+  File? selectedFile;
+  final TextEditingController fileNameController = TextEditingController();
+  final TextEditingController fileDescController = TextEditingController();
+
+  String get token => context.read<AuthProvider>().token ?? '';
+  String get baseUrl => AppConstants.apiBaseUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFiles();
+  }
+
+  Future<void> fetchFiles() async {
+    if (widget.groupId == null) return;
+    setState(() => isLoading = true);
+    try {
+      final uri = Uri.parse('$baseUrl/api/files/group/${widget.groupId}');
+      final res = await http.get(uri, headers: {'Authorization': 'Bearer $token'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['status'] == true) {
+          setState(() {
+            files = List<Map<String, dynamic>>.from(data['files'] ?? []);
+          });
+        }
+      } else {
+        debugPrint('Fetch files failed: ${res.body}');
+      }
+    } catch (e) {
+      debugPrint('Error fetchFiles: $e');
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> uploadFile(File file, {String? name, String? description}) async {
+    if (widget.groupId == null) return;
+    try {
+      final uri = Uri.parse('$baseUrl/api/files/upload');
+      final request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..fields['group_id'] = widget.groupId.toString();
+      if (description != null) request.fields['description'] = description;
+      if (name != null) request.fields['name'] = name;
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      final streamed = await request.send();
+      final res = await http.Response.fromStream(streamed);
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['status'] == true) {
+          fetchFiles();
+          if(mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('File đã được tải lên')),
+            );
+          }
+          setState(() {
+            selectedFile = null;
+            fileNameController.clear();
+            fileDescController.clear();
+          });
+        }
+      } else {
+        debugPrint('Upload file failed: ${res.body}');
+      }
+    } catch (e) {
+      debugPrint('Error uploadFile: $e');
+    }
+  }
+
+  void showUploadDialog() {
+    selectedFile = null;
+    fileNameController.clear();
+    fileDescController.clear();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, void Function(void Function()) setStateDialog) {
+            // Lấy tên và extension
+            final fileName = selectedFile?.path.split('/').last;
+            final extension = fileName != null && fileName.contains('.')
+                ? fileName.split('.').last.toLowerCase()
+                : null;
+
+            // Chọn icon dựa theo extension
+            IconData fileIcon;
+            if (extension == 'pdf') {
+              fileIcon = Icons.picture_as_pdf;
+            } else if (extension == 'doc' || extension == 'docx') {
+              fileIcon = Icons.description;
+            } else if (extension == 'png' || extension == 'jpg' || extension == 'jpeg') {
+              fileIcon = Icons.image;
+            } else {
+              fileIcon = Icons.insert_drive_file;
+            }
+
+            return AlertDialog(
+              title: const Text('Tải file lên'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await FilePicker.platform.pickFiles();
+                        if (result != null && result.files.isNotEmpty) {
+                          selectedFile = File(result.files.first.path!);
+                          fileNameController.text =
+                              result.files.first.name.split('.').first; // tên không có ext
+                          setStateDialog(() {});
+                        }
+                      },
+                      icon: const Icon(Icons.attach_file),
+                      label: const Text('Chọn tệp'),
+                    ),
+
+                    // Hiển thị file đã chọn
+                    if (selectedFile != null) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(fileIcon, size: 32),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              fileName ?? '',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: fileNameController,
+                        decoration: const InputDecoration(labelText: 'Tên file (tùy chọn)'),
+                      ),
+                      TextField(
+                        controller: fileDescController,
+                        decoration: const InputDecoration(labelText: 'Mô tả (tùy chọn)'),
+                      ),
+                    ]
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Hủy'),
+                ),
+                ElevatedButton(
+                  onPressed: selectedFile == null
+                      ? null
+                      : () async {
+                    Navigator.pop(context);
+                    await uploadFile(
+                      selectedFile!,
+                      name: fileNameController.text.trim(),
+                      description: fileDescController.text.trim(),
+                    );
+                  },
+                  child: const Text('Tải lên'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Column(
+      children: [
+        // Thanh trên cùng giống AppBar
+        Material(
+          elevation: 2,
+          color: Theme.of(context).colorScheme.surface,
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.upload_file),
+                  tooltip: 'Tải file lên',
+                  onPressed: showUploadDialog,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Danh sách file',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                // chỗ này có thể thêm các nút khác sau này
+              ],
+            ),
+          ),
+        ),
+
+        // Danh sách file
+        Expanded(
+          child: files.isEmpty
+              ? const Center(child: Text('Chưa có tệp đính kèm'))
+              : ListView.builder(
+            itemCount: files.length,
+            itemBuilder: (_, index) {
+              final f = files[index];
+              return ListTile(
+                leading: const Icon(Icons.insert_drive_file),
+                title: Text(f['name'] ?? 'Tên file'),
+                subtitle: Text('${f['size'] ?? ''} bytes'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => FileDetailPage(fileUrl: '${AppConstants.apiBaseUrl}/storage/${f['path']}', name: f['name'],), // đường dẫn đầy đủ
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
