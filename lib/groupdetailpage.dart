@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -94,7 +95,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Chỉnh sửa nhóm', style: Theme.of(ctx).textTheme.titleLarge),
+                  Text(AppLocalizations.of(context)!.editGroup, style: Theme.of(ctx).textTheme.titleLarge),
                   const SizedBox(height: 16),
                   GestureDetector(
                     onTap: () async {
@@ -166,7 +167,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                       }
                     },
                     icon: const Icon(Icons.save),
-                    label: const Text('Lưu thay đổi'),
+                    label: Text(AppLocalizations.of(context)!.save_changes),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -205,20 +206,20 @@ class _GroupDetailPageState extends State<GroupDetailPage>
         // Cập nhật thành công
         if(context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cập nhật vai trò thành công')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.update_role_success)),
           );
         }
       } else {
         if(context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(res['message'] ?? 'Có lỗi xảy ra')),
+            SnackBar(content: Text(res['message'])),
           );
         }
       }
     } else {
       if(context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi ${response.statusCode}')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorMessage(response.statusCode.toString()))),
         );
       }
     }
@@ -238,7 +239,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
             return Scaffold(
               appBar: AppBar(
                 automaticallyImplyLeading: false,
-                title: Text(isAdmin ? 'Quản lý thành viên' : 'Danh sách thành viên'),
+                title: Text(isAdmin ? AppLocalizations.of(context)!.manageMembers : AppLocalizations.of(context)!.memberList),
                 actions: [
                   if (isAdmin)
                     IconButton(
@@ -281,13 +282,13 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                         }
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'changeRole',
-                          child: Text('Thay đổi vai trò'),
+                          child: Text(AppLocalizations.of(context)!.change_role),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'remove',
-                          child: Text('Gỡ thành viên'),
+                          child: Text(AppLocalizations.of(context)!.remove_member),
                         ),
                       ],
                       icon: const Icon(Icons.more_vert),
@@ -325,7 +326,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
             insetPadding: const EdgeInsets.symmetric(horizontal: 8),
             contentPadding: EdgeInsets.zero,
             titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-            title: const Text('Thêm thành viên'),
+            title: Text(AppLocalizations.of(context)!.add_member),
             content: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: dialogWidth > maxDialogWidth
@@ -361,11 +362,11 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Email bắt buộc';
+                                      return AppLocalizations.of(context)!.emailRequired;
                                     }
                                     if (!RegExp(r'\S+@\S+\.\S+')
                                         .hasMatch(value)) {
-                                      return 'Email không hợp lệ';
+                                      return AppLocalizations.of(context)!.invalidEmail;
                                     }
                                     return null;
                                   },
@@ -381,20 +382,20 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                                       flex: 2, // nhỏ hơn
                                       child: DropdownButtonFormField<String>(
                                         value: member['role'],
-                                        decoration: const InputDecoration(
-                                          labelText: 'Vai trò',
+                                        decoration: InputDecoration(
+                                          labelText: AppLocalizations.of(context)!.role,
                                           border: OutlineInputBorder(),
                                         ),
-                                        items: const [
+                                        items:[
                                           DropdownMenuItem(
                                               value: 'member',
-                                              child: Text('Member')),
+                                              child: Text(AppLocalizations.of(context)!.role_member)),
                                           DropdownMenuItem(
                                               value: 'manager',
-                                              child: Text('Manager')),
+                                              child: Text(AppLocalizations.of(context)!.role_manager)),
                                           DropdownMenuItem(
                                               value: 'admin',
-                                              child: Text('Admin')),
+                                              child: Text(AppLocalizations.of(context)!.role_admin)),
                                         ],
                                         onChanged: (value) {
                                           setState(() {
@@ -407,7 +408,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                                     IconButton(
                                       icon: const Icon(Icons.remove_circle,
                                           color: Colors.red),
-                                      tooltip: 'Xoá thành viên này',
+                                      tooltip: AppLocalizations.of(context)!.delete_this_member,
                                       onPressed: () {
                                         setState(() {
                                           members.removeAt(index);
@@ -429,7 +430,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                           });
                         },
                         icon: const Icon(Icons.add),
-                        label: const Text('Thêm thành viên mới'),
+                        label: Text(AppLocalizations.of(context)!.add_new_member),
                       ),
                     ],
                   ),
@@ -439,7 +440,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Hủy'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -447,7 +448,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                   await addMembers(context, groupId, members);
                   if (context.mounted) Navigator.pop(ctx);
                 },
-                child: const Text('Thêm'),
+                child: Text(AppLocalizations.of(context)!.add),
               ),
             ],
           ),
@@ -482,7 +483,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       results.forEach((email, result) {
         if (result['status'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$email: thêm thành công')),
+            SnackBar(content: Text('${AppLocalizations.of(context)!.add_success}: $email')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -494,7 +495,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       _fetchGroupDetail();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi ${response.statusCode}')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorMessage(response.statusCode.toString()))),
       );
     }
   }
@@ -511,19 +512,19 @@ class _GroupDetailPageState extends State<GroupDetailPage>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc chắn muốn xoá thành viên "$userName" khỏi nhóm không?'),
+        title:Text(AppLocalizations.of(context)!.confirm_delete),
+        content: Text(AppLocalizations.of(context)!.confirm_delete_member_message(userName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Xoá'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -549,21 +550,21 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       if (res['status'] == true) {
         if(context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Xoá thành viên thành công')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.delete_member_success)),
           );
         }
         _fetchGroupDetail();
       } else {
         if(context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(res['message'] ?? 'Có lỗi xảy ra')),
+            SnackBar(content: Text(res['message'])),
           );
         }
       }
     } else {
       if(context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi ${response.statusCode} khi xoá')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorMessage(response.statusCode.toString()))),
         );
       }
     }
@@ -576,22 +577,22 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Thay đổi vai trò cho ${member['user']['name']}'),
+          title: Text(AppLocalizations.of(context)!.change_role_for_member(member['user']['name'])),
           content: DropdownButtonFormField<String>(
             value: selectedRole,
             onChanged: (value) {
               selectedRole = value;
             },
-            items: const [
-              DropdownMenuItem(value: 'member', child: Text('Thành viên')),
-              DropdownMenuItem(value: 'manager', child: Text('Quản lí')),
-              DropdownMenuItem(value: 'admin', child: Text('Quản trị')),
+            items: [
+              DropdownMenuItem(value: 'member', child: Text(AppLocalizations.of(context)!.role_member)),
+              DropdownMenuItem(value: 'manager', child: Text(AppLocalizations.of(context)!.role_manager)),
+              DropdownMenuItem(value: 'admin', child: Text(AppLocalizations.of(context)!.role_admin)),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -610,7 +611,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Lưu'),
+              child:Text(AppLocalizations.of(context)!.save),
             ),
           ],
         );
@@ -632,14 +633,14 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Xác nhận xoá nhóm', style: TextStyle(color: Colors.red)),
+          title: Text(AppLocalizations.of(context)!.confirm_delete_group, style: TextStyle(color: Colors.red)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Bạn có chắc chắn xoá nhóm? Tất cả dữ liệu sẽ mất.'),
-              const SizedBox(height: 12),
+              Text(AppLocalizations.of(context)!.confirm_delete_group_message),
+              SizedBox(height: 12),
               Text(
-                'Nhập đúng mã xác nhận bên dưới để xoá nhóm:',
+                AppLocalizations.of(context)!.enter_confirmation_code_to_delete,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -650,8 +651,8 @@ class _GroupDetailPageState extends State<GroupDetailPage>
               const SizedBox(height: 8),
               TextField(
                 controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Nhập mã xác nhận',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.enter_confirmation_code,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -660,14 +661,14 @@ class _GroupDetailPageState extends State<GroupDetailPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
                 if (controller.text != confirmationCode) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mã xác nhận không đúng')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.invalid_confirmation_code)),
                   );
                   return;
                 }
@@ -690,22 +691,22 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                   final res = jsonDecode(response.body);
                   if (res['status'] == true) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Nhóm đã được xoá thành công')),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.group_deleted_successfully)),
                     );
                     Navigator.pop(ctx);
                     if (onDeleted != null) onDeleted();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(res['message'] ?? 'Có lỗi xảy ra')),
+                      SnackBar(content: Text(res['message'])),
                     );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi ${response.statusCode}')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.errorMessage(response.statusCode.toString()))),
                   );
                 }
               },
-              child: const Text('Xoá nhóm'),
+              child: Text(AppLocalizations.of(context)!.delete_group),
             ),
           ],
         );
@@ -725,14 +726,14 @@ class _GroupDetailPageState extends State<GroupDetailPage>
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Xác nhận rời nhóm', style: TextStyle(color: Colors.red)),
+          title: Text(AppLocalizations.of(context)!.confirm_leave_group, style: TextStyle(color: Colors.red)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Bạn có chắc chắn muốn rời nhóm?'),
-              const SizedBox(height: 12),
+              Text(AppLocalizations.of(context)!.confirm_leave_group_message),
+              SizedBox(height: 12),
               Text(
-                'Nhập đúng mã xác nhận bên dưới để rời nhóm:',
+                AppLocalizations.of(context)!.enter_confirmation_code,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -744,8 +745,8 @@ class _GroupDetailPageState extends State<GroupDetailPage>
               TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Nhập mã xác nhận',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.enter_confirmation_code,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -754,14 +755,14 @@ class _GroupDetailPageState extends State<GroupDetailPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
                 if (controller.text != confirmationCode) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mã xác nhận không đúng')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.invalid_confirmation_code)),
                   );
                   return;
                 }
@@ -784,22 +785,22 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                   final res = jsonDecode(response.body);
                   if (res['status'] == true) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Bạn đã rời nhóm thành công')),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.leave_group_success)),
                     );
                     Navigator.pop(ctx);
                     if (onLeaved != null) onLeaved();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(res['message'] ?? 'Có lỗi xảy ra')),
+                      SnackBar(content: Text(res['message'])),
                     );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi ${response.statusCode}')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.errorMessage(response.statusCode.toString()))),
                   );
                 }
               },
-              child: const Text('Rời nhóm'),
+              child: Text(AppLocalizations.of(context)!.leave_group),
             ),
           ],
         );
@@ -815,9 +816,14 @@ class _GroupDetailPageState extends State<GroupDetailPage>
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     final currentUserId = context.read<AuthProvider>().userId;
     final data = groupData ?? {};
-    final isAdmin = (data['members'] as List<dynamic>).any(
+    final isAdmin = data['createdBy']?['id'] == currentUserId || (data['members'] as List<dynamic>).any(
               (member) => member['user_id'] == currentUserId && member['role'] == 'admin',
         );
     final isOwner = data['createdBy']?['id'] == currentUserId;
@@ -924,9 +930,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
+      body: Column(
         children: [
           // Group Info Section
           Container(
@@ -1025,7 +1029,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
   }
 
   Widget _buildChatTab() {
-    return const Center(child: Text('Danh sách Chat...'));
+    return ChatTab(chatId: groupData?['chat_id']);
   }
 
   Widget _buildTasksTab() {
@@ -1060,21 +1064,21 @@ class _GroupDetailPageState extends State<GroupDetailPage>
 
           // Mô tả nhóm
           Text(
-            'Mô tả: ${data['description']}',
+            '${AppLocalizations.of(context)!.description}: ${data['description']}',
             style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
           ),
           const SizedBox(height: 8),
 
           // Người tạo
           Text(
-            'Được tạo bởi: ${data['createdBy']['name']}',
+            '${AppLocalizations.of(context)!.createdBy}: ${data['createdBy']['name']}',
             style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 16),
 
           // Thống kê thành viên
           Text(
-            'Tổng số thành viên: ${data['members_count']}',
+            '${AppLocalizations.of(context)!.total_members}: ${data['members_count']}',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1083,8 +1087,8 @@ class _GroupDetailPageState extends State<GroupDetailPage>
           const SizedBox(height: 16),
 
           // Danh sách thành viên
-          const Text(
-            'Danh sách thành viên:',
+          Text(
+            '${AppLocalizations.of(context)!.member_list}:',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1107,7 +1111,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
-                      'Vai trò: ${role.replaceFirst(role[0], role[0].toUpperCase())}',
+                      '${AppLocalizations.of(context)!.role}: ${role.replaceFirst(role[0], role[0].toUpperCase())}',
                     ),
                     leading: CircleAvatar(
                     radius: 10,
@@ -1178,25 +1182,25 @@ class _TasksTabState extends State<TasksTab> {
       builder: (dialogCtx) {
         return StatefulBuilder(
           builder: (context, setStateDialog) => AlertDialog(
-            title: const Text('Tạo công việc mới'),
+            title: Text(AppLocalizations.of(context)!.create_new_task),
             content: SingleChildScrollView(
               child: Column(
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration: const InputDecoration(labelText: 'Tiêu đề'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.title),
                   ),
                   TextField(
                     controller: descController,
-                    decoration: const InputDecoration(labelText: 'Mô tả'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.description),
                   ),
                   DropdownButtonFormField<String>(
                     value: selectedPriority,
-                    items: const [
-                      DropdownMenuItem(value: 'high', child: Text('Cao')),
+                    items: [
+                      DropdownMenuItem(value: 'high', child: Text(AppLocalizations.of(context)!.priority_high)),
                       DropdownMenuItem(
-                          value: 'medium', child: Text('Trung bình')),
-                      DropdownMenuItem(value: 'low', child: Text('Thấp')),
+                          value: 'medium', child: Text(AppLocalizations.of(context)!.priority_medium)),
+                      DropdownMenuItem(value: 'low', child: Text(AppLocalizations.of(context)!.priority_low)),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -1205,7 +1209,7 @@ class _TasksTabState extends State<TasksTab> {
                         });
                       }
                     },
-                    decoration: const InputDecoration(labelText: 'Ưu tiên'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.priority),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -1213,8 +1217,8 @@ class _TasksTabState extends State<TasksTab> {
                       Expanded(
                         child: Text(
                           selectedDeadline == null
-                              ? 'Chưa chọn hạn chót'
-                              : 'Hạn chót: ${selectedDeadline!.day}/${selectedDeadline!.month}/${selectedDeadline!.year} ${selectedDeadline!.hour.toString().padLeft(2, '0')}:${selectedDeadline!.minute.toString().padLeft(2, '0')}',
+                              ? AppLocalizations.of(context)!.no_deadline_selected
+                              : '${AppLocalizations.of(context)!.deadline}: ${selectedDeadline!.day}/${selectedDeadline!.month}/${selectedDeadline!.year} ${selectedDeadline!.hour.toString().padLeft(2, '0')}:${selectedDeadline!.minute.toString().padLeft(2, '0')}',
                         ),
                       ),
                       TextButton(
@@ -1247,7 +1251,7 @@ class _TasksTabState extends State<TasksTab> {
                             });
                           }
                         },
-                        child: const Text('Chọn hạn chót'),
+                        child: Text(AppLocalizations.of(context)!.select_deadline),
                       ),
                     ],
                   ),
@@ -1257,7 +1261,7 @@ class _TasksTabState extends State<TasksTab> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Hủy'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -1276,7 +1280,7 @@ class _TasksTabState extends State<TasksTab> {
                     Navigator.of(context).pop();
                   }
                 },
-                child: const Text('Tạo'),
+                child: Text(AppLocalizations.of(context)!.create),
               ),
             ],
           ),
@@ -1313,7 +1317,7 @@ class _TasksTabState extends State<TasksTab> {
     );
 
     if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception('Không tạo được task: ${response.body}');
+      throw Exception("Can't create task: ${response.body}");
     }
   }
 
@@ -1344,7 +1348,7 @@ class _TasksTabState extends State<TasksTab> {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Cập nhật task thất bại: ${response.body}');
+        throw Exception(response.body);
     }
   }
 
@@ -1421,42 +1425,42 @@ class _TasksTabState extends State<TasksTab> {
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setState) {
           return AlertDialog(
-            title: const Text('Chỉnh sửa Task'),
+            title: Text(AppLocalizations.of(context)!.edit_task),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration: const InputDecoration(labelText: 'Tiêu đề'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.title),
                   ),
                   TextField(
                     controller: descController,
-                    decoration: const InputDecoration(labelText: 'Mô tả'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.description),
                     maxLines: 3,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: priority,
-                    decoration: const InputDecoration(labelText: 'Độ ưu tiên'),
-                    items: const [
-                      DropdownMenuItem(value: 'low', child: Text('Thấp')),
-                      DropdownMenuItem(value: 'medium', child: Text('Trung bình')),
-                      DropdownMenuItem(value: 'high', child: Text('Cao')),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.priority),
+                    items: [
+                      DropdownMenuItem(value: 'low', child: Text(AppLocalizations.of(context)!.priority_low)),
+                      DropdownMenuItem(value: 'medium', child: Text(AppLocalizations.of(context)!.priority_medium)),
+                      DropdownMenuItem(value: 'high', child: Text(AppLocalizations.of(context)!.priority_high)),
                     ],
                     onChanged: (val) => setState(() => priority = val!),
                   ),
                   const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Hạn'),
+                    title: Text(AppLocalizations.of(context)!.deadline),
                     subtitle: Text(deadline != null
                         ? '${deadline!.day.toString().padLeft(2, '0')}/'
                         '${deadline!.month.toString().padLeft(2, '0')}/'
                         '${deadline!.year} '
                         '${deadline!.hour.toString().padLeft(2, '0')}:'
                         '${deadline!.minute.toString().padLeft(2, '0')}'
-                        : 'Chưa chọn'),
+                        : AppLocalizations.of(context)!.no_deadline_selected),
                     trailing: IconButton(
                       icon: const Icon(Icons.calendar_today),
                       onPressed: () async {
@@ -1500,7 +1504,7 @@ class _TasksTabState extends State<TasksTab> {
                   )
                   ,
                   const SizedBox(height: 12),
-                  const Text('Thành viên thực hiện'),
+                  Text(AppLocalizations.of(context)!.task_assignee),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -1536,7 +1540,7 @@ class _TasksTabState extends State<TasksTab> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Hủy'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -1568,7 +1572,7 @@ class _TasksTabState extends State<TasksTab> {
                     _tasksFuture;
                   }
                 },
-                child: const Text('Lưu'),
+                child: Text(AppLocalizations.of(context)!.save),
               ),
             ],
           );
@@ -1585,13 +1589,13 @@ class _TasksTabState extends State<TasksTab> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: null,
-        title: const Text('Danh sách Tasks'),
+        title: Text(AppLocalizations.of(context)!.task_list),
         actions: [
           if (canCreateTask)
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: _showCreateTaskDialog,
-              tooltip: 'Tạo task mới',
+              tooltip: AppLocalizations.of(context)!.create_new_task_action,
             ),
         ],
       ),
@@ -1602,13 +1606,13 @@ class _TasksTabState extends State<TasksTab> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Lỗi: ${snapshot.error}'));
+            return Center(child: Text(AppLocalizations.of(context)!.errorMessage(snapshot.error.toString())));
           }
 
           final tasks = snapshot.data ?? [];
 
           if (tasks.isEmpty) {
-            return const Center(child: Text('Không có công việc nào.'));
+            return Center(child: Text(AppLocalizations.of(context)!.no_tasks_found));
           }
 
           return ListView.builder(
@@ -1621,13 +1625,13 @@ class _TasksTabState extends State<TasksTab> {
                 margin:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: ListTile(
-                  title: Text(task['title'] ?? 'Không tiêu đề'),
+                  title: Text(task['title'] ?? AppLocalizations.of(context)!.no_title),
                   // thay subtitle bằng Column để hiển thị cả text trạng thái lẫn avatar
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Trạng thái: ${task['status'] ?? 0}% • Ưu tiên: ${task['priority'] ?? ''}',
+                        '${AppLocalizations.of(context)!.status}: ${task['status'] ?? 0}% • ${AppLocalizations.of(context)!.priority}: ${task['priority'] ?? ''}',
                       ),
                       const SizedBox(height: 4),
                       // hàng avatar người thực hiện
@@ -1760,7 +1764,7 @@ class _FilesTabState extends State<FilesTab> {
           fetchFiles();
           if(mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('File đã được tải lên')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.file_uploaded)),
             );
           }
           setState(() {
@@ -1806,7 +1810,7 @@ class _FilesTabState extends State<FilesTab> {
             }
 
             return AlertDialog(
-              title: const Text('Tải file lên'),
+              title: Text(AppLocalizations.of(context)!.upload_file),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1822,7 +1826,7 @@ class _FilesTabState extends State<FilesTab> {
                         }
                       },
                       icon: const Icon(Icons.attach_file),
-                      label: const Text('Chọn tệp'),
+                      label: Text(AppLocalizations.of(context)!.select_file),
                     ),
 
                     // Hiển thị file đã chọn
@@ -1844,11 +1848,11 @@ class _FilesTabState extends State<FilesTab> {
                       const SizedBox(height: 12),
                       TextField(
                         controller: fileNameController,
-                        decoration: const InputDecoration(labelText: 'Tên file (tùy chọn)'),
+                        decoration: InputDecoration(labelText: AppLocalizations.of(context)!.file_name_optional),
                       ),
                       TextField(
                         controller: fileDescController,
-                        decoration: const InputDecoration(labelText: 'Mô tả (tùy chọn)'),
+                        decoration: InputDecoration(labelText: AppLocalizations.of(context)!.description_optional),
                       ),
                     ]
                   ],
@@ -1857,7 +1861,7 @@ class _FilesTabState extends State<FilesTab> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Hủy'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 ElevatedButton(
                   onPressed: selectedFile == null
@@ -1870,7 +1874,7 @@ class _FilesTabState extends State<FilesTab> {
                       description: fileDescController.text.trim(),
                     );
                   },
-                  child: const Text('Tải lên'),
+                  child: Text(AppLocalizations.of(context)!.upload),
                 ),
               ],
             );
@@ -1880,6 +1884,12 @@ class _FilesTabState extends State<FilesTab> {
     );
   }
 
+  String formatBytes(int bytes, int decimals) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1900,12 +1910,12 @@ class _FilesTabState extends State<FilesTab> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.upload_file),
-                  tooltip: 'Tải file lên',
+                  tooltip: AppLocalizations.of(context)!.upload_file,
                   onPressed: showUploadDialog,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Danh sách file',
+                  AppLocalizations.of(context)!.file_list,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
@@ -1918,15 +1928,15 @@ class _FilesTabState extends State<FilesTab> {
         // Danh sách file
         Expanded(
           child: files.isEmpty
-              ? const Center(child: Text('Chưa có tệp đính kèm'))
+              ? Center(child: Text(AppLocalizations.of(context)!.no_attachments))
               : ListView.builder(
             itemCount: files.length,
             itemBuilder: (_, index) {
               final f = files[index];
               return ListTile(
                 leading: const Icon(Icons.insert_drive_file),
-                title: Text(f['name'] ?? 'Tên file'),
-                subtitle: Text('${f['size'] ?? ''} bytes'),
+                title: Text(f['name'] ?? 'File name'),
+                subtitle: Text(formatBytes(f['size'] ?? 0, 2)),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -1939,6 +1949,186 @@ class _FilesTabState extends State<FilesTab> {
             },
           ),
         ),
+      ],
+    );
+  }
+}
+class ChatTab extends StatefulWidget {
+  final int chatId;
+  const ChatTab({super.key, required this.chatId});
+
+  @override
+  ChatTabState createState() => ChatTabState();
+}
+
+class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
+  List<dynamic> _messages = [];
+  final TextEditingController _controller = TextEditingController();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _fetchMessages();
+    // polling 3s/lần (tạm thời)
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    _controller.clear();
+    super.dispose();
+  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startPolling();
+    } else {
+      _stopPolling();
+    }
+  }
+
+  void _startPolling() {
+    _timer?.cancel(); // Đảm bảo không có timer nào đang chạy
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages());
+  }
+
+  void _stopPolling() {
+    _timer?.cancel();
+  }
+  Future<void> _fetchMessages() async {
+    final token = context.read<AuthProvider>().token;
+    final res = await http.get(
+      Uri.parse('${AppConstants.apiBaseUrl}/api/chats/${widget.chatId}/messages'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data['status'] == true) {
+        if(mounted) {
+          setState(() {
+            _messages = data['messages'];
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    final token = context.read<AuthProvider>().token;
+    final res = await http.post(
+      Uri.parse('${AppConstants.apiBaseUrl}/api/chats/${widget.chatId}/messages'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: jsonEncode({'text': text}),
+    );
+
+    if (res.statusCode == 201) {
+      _controller.clear();
+      _fetchMessages();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUserId = context.read<AuthProvider>().userId;
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: _messages.length,
+            itemBuilder: (context, index) {
+              final msg = _messages[index];
+              final isMine = msg['sender_id'] == currentUserId;
+              return Align(
+                alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      msg['sender']['name'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      textScaler: TextScaler.linear(0.8),
+                    ),
+                    Row(
+                      mainAxisAlignment: isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+                      children: [
+                        if (!isMine)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CircleAvatar(
+                              backgroundImage: (msg['sender']['avturl'] != null)
+                                  ? NetworkImage('${AppConstants.apiBaseUrl}/storage/${msg['sender']['avturl']}')
+                                  : const AssetImage('assets/images/avtUdefault.png')
+                              as ImageProvider,
+                              radius: 16,
+                            ),
+                          ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isMine
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            msg['text'],
+                            style: TextStyle(
+                              color: isMine
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.type_message_placeholder,
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _sendMessage,
+                )
+              ],
+            ),
+          ),
+        )
       ],
     );
   }

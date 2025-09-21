@@ -569,6 +569,504 @@ abstract class AppLocalizations {
   /// **'Leave Group'**
   String get leaveGroup;
 
+  /// No description provided for @read_later_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot mark as read, try again later'**
+  String get read_later_error;
+
+  /// No description provided for @mark_all_as_read.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get mark_all_as_read;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @edit_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get edit_group;
+
+  /// No description provided for @save_changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get save_changes;
+
+  /// No description provided for @update_role_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Role updated successfully'**
+  String get update_role_success;
+
+  /// No description provided for @change_role.
+  ///
+  /// In en, this message translates to:
+  /// **'Change role'**
+  String get change_role;
+
+  /// No description provided for @remove_member.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove member'**
+  String get remove_member;
+
+  /// No description provided for @add_member.
+  ///
+  /// In en, this message translates to:
+  /// **'Add member'**
+  String get add_member;
+
+  /// No description provided for @role_member.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get role_member;
+
+  /// No description provided for @role_manager.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager'**
+  String get role_manager;
+
+  /// No description provided for @role_admin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get role_admin;
+
+  /// No description provided for @delete_this_member.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this member'**
+  String get delete_this_member;
+
+  /// No description provided for @add_new_member.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new member'**
+  String get add_new_member;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @add_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Added successfully'**
+  String get add_success;
+
+  /// No description provided for @confirm_delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm deletion'**
+  String get confirm_delete;
+
+  /// No description provided for @confirm_delete_member_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {userName} from the group?'**
+  String confirm_delete_member_message(Object userName);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @delete_member_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Member deleted successfully'**
+  String get delete_member_success;
+
+  /// No description provided for @change_role_for_member.
+  ///
+  /// In en, this message translates to:
+  /// **'Change role for {memberName}'**
+  String change_role_for_member(Object memberName);
+
+  /// No description provided for @confirm_delete_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm group deletion'**
+  String get confirm_delete_group;
+
+  /// No description provided for @confirm_delete_group_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the group? All data will be lost.'**
+  String get confirm_delete_group_message;
+
+  /// No description provided for @enter_confirmation_code_to_delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the correct confirmation code below to delete the group:'**
+  String get enter_confirmation_code_to_delete;
+
+  /// No description provided for @enter_confirmation_code.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter confirmation code'**
+  String get enter_confirmation_code;
+
+  /// No description provided for @invalid_confirmation_code.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid confirmation code'**
+  String get invalid_confirmation_code;
+
+  /// No description provided for @group_deleted_successfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Group deleted successfully'**
+  String get group_deleted_successfully;
+
+  /// No description provided for @delete_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get delete_group;
+
+  /// No description provided for @confirm_leave_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm leaving group'**
+  String get confirm_leave_group;
+
+  /// No description provided for @confirm_leave_group_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave the group?'**
+  String get confirm_leave_group_message;
+
+  /// No description provided for @enter_confirmation_code_to_leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the correct confirmation code below to leave the group:'**
+  String get enter_confirmation_code_to_leave;
+
+  /// No description provided for @leave_group_success.
+  ///
+  /// In en, this message translates to:
+  /// **'You have left the group successfully'**
+  String get leave_group_success;
+
+  /// No description provided for @leave_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave group'**
+  String get leave_group;
+
+  /// No description provided for @total_members.
+  ///
+  /// In en, this message translates to:
+  /// **'Total members'**
+  String get total_members;
+
+  /// No description provided for @member_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Member list'**
+  String get member_list;
+
+  /// No description provided for @role.
+  ///
+  /// In en, this message translates to:
+  /// **'Role:'**
+  String get role;
+
+  /// No description provided for @create_new_task.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new task'**
+  String get create_new_task;
+
+  /// No description provided for @title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
+
+  /// No description provided for @description_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description_label;
+
+  /// No description provided for @priority_high.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get priority_high;
+
+  /// No description provided for @priority_medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get priority_medium;
+
+  /// No description provided for @priority_low.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get priority_low;
+
+  /// No description provided for @priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get priority;
+
+  /// No description provided for @no_deadline_selected.
+  ///
+  /// In en, this message translates to:
+  /// **'No deadline selected'**
+  String get no_deadline_selected;
+
+  /// No description provided for @deadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline:'**
+  String get deadline;
+
+  /// No description provided for @select_deadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Select deadline'**
+  String get select_deadline;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @edit_task.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit task'**
+  String get edit_task;
+
+  /// No description provided for @task_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get task_title;
+
+  /// No description provided for @task_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get task_description;
+
+  /// No description provided for @task_priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get task_priority;
+
+  /// No description provided for @task_assignee.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignee'**
+  String get task_assignee;
+
+  /// No description provided for @task_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Task list'**
+  String get task_list;
+
+  /// No description provided for @create_new_task_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new task'**
+  String get create_new_task_action;
+
+  /// No description provided for @no_tasks_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks found.'**
+  String get no_tasks_found;
+
+  /// No description provided for @no_title.
+  ///
+  /// In en, this message translates to:
+  /// **'No title'**
+  String get no_title;
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status:'**
+  String get status;
+
+  /// No description provided for @file_uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'File uploaded'**
+  String get file_uploaded;
+
+  /// No description provided for @upload_file.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload file'**
+  String get upload_file;
+
+  /// No description provided for @select_file.
+  ///
+  /// In en, this message translates to:
+  /// **'Select file'**
+  String get select_file;
+
+  /// No description provided for @file_name_optional.
+  ///
+  /// In en, this message translates to:
+  /// **'File name (optional)'**
+  String get file_name_optional;
+
+  /// No description provided for @upload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get upload;
+
+  /// No description provided for @file_list.
+  ///
+  /// In en, this message translates to:
+  /// **'File list'**
+  String get file_list;
+
+  /// No description provided for @no_attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'No attachments yet'**
+  String get no_attachments;
+
+  /// No description provided for @type_message_placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message...'**
+  String get type_message_placeholder;
+
+  /// No description provided for @attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get attachments;
+
+  /// No description provided for @comment_placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a comment...'**
+  String get comment_placeholder;
+
+  /// No description provided for @no_comments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet'**
+  String get no_comments;
+
+  /// No description provided for @comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get comments;
+
+  /// No description provided for @assignee.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignee'**
+  String get assignee;
+
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
+
+  /// No description provided for @no_description.
+  ///
+  /// In en, this message translates to:
+  /// **'No description'**
+  String get no_description;
+
+  /// No description provided for @task_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Task details'**
+  String get task_details;
+
+  /// No description provided for @send_comment_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send comment'**
+  String get send_comment_failed;
+
+  /// No description provided for @storage_permission_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage permission denied'**
+  String get storage_permission_denied;
+
+  /// No description provided for @download_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Download started'**
+  String get download_start;
+
+  /// No description provided for @downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloading;
+
+  /// No description provided for @download_completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded'**
+  String get download_completed;
+
+  /// No description provided for @download_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'File download failed'**
+  String get download_failed;
+
+  /// No description provided for @file_not_found.
+  ///
+  /// In en, this message translates to:
+  /// **'File not found'**
+  String get file_not_found;
+
+  /// No description provided for @image_not_displayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Image cannot be displayed'**
+  String get image_not_displayed;
+
+  /// No description provided for @file_type_not_supported.
+  ///
+  /// In en, this message translates to:
+  /// **'This file type is not supported for display'**
+  String get file_type_not_supported;
+
   /// Display generic error message with parameter
   ///
   /// In en, this message translates to:

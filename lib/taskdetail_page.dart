@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -93,7 +94,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       } else {
         if(mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gửi comment thất bại')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.send_comment_failed)),
           );
         }
       }
@@ -101,7 +102,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       //debugPrint('Error sendComment: $e');
       if(mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gửi comment thất bại: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.send_comment_failed}: $e')),
         );
       }
     }
@@ -190,7 +191,12 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       debugPrint('Error uploadFile: $e');
     }
   }
-
+  String formatBytes(int bytes, int decimals) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
+  }
   @override
   Widget build(BuildContext context) {
     final assignees = (task['assignees'] as List?) ?? [];
@@ -198,7 +204,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(task['title'] ?? 'Chi tiết công việc'),
+        title: Text(task['title'] ?? AppLocalizations.of(context)!.task_details),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -207,13 +213,13 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           children: [
             // Title & Priority & Deadline
             Text(
-              task['title'] ?? 'Không tiêu đề',
+              task['title'] ?? AppLocalizations.of(context)!.no_title,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 4),
             Text(
-              'Ưu tiên: ${task['priority'] ?? ''} | '
-                  'Hạn: ${task['deadline'] ?? 'Chưa có'}',
+              '${AppLocalizations.of(context)!.priority}: ${task['priority'] ?? ''} | '
+                  '${AppLocalizations.of(context)!.deadline}: ${task['deadline'] ?? AppLocalizations.of(context)!.no_deadline_selected}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const Divider(),
@@ -225,14 +231,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              task['description'] ?? 'Không có mô tả',
+              task['description'] ?? AppLocalizations.of(context)!.no_description,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const Divider(),
 
             // Progress / Status
             Text(
-              'Tiến độ (${status?.toInt() ?? 0}%)',
+              '${AppLocalizations.of(context)!.progress} (${status?.toInt() ?? 0}%)',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             Slider(
@@ -262,7 +268,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
             // Assignees
             Text(
-              'Người thực hiện',
+              AppLocalizations.of(context)!.assignee,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -292,18 +298,18 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
             // Comments
             Text(
-              'Bình luận',
+              AppLocalizations.of(context)!.comments,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             // Hiển thị danh sách comment
             Column(
               children: comments.isEmpty
-                  ? [const Text('Chưa có bình luận')]
+                  ? [Text(AppLocalizations.of(context)!.no_comments)]
                   : comments.map((c) {
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(c['user']['name'] ?? 'Ẩn danh'),
+                  title: Text(c['user']['name'] ?? 'No Name'),
                   subtitle: Text(c['text'] ?? ''),
                 );
               }).toList(),
@@ -315,8 +321,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 Expanded(
                   child: TextField(
                     controller: commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập bình luận...',
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.comment_placeholder,
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.multiline,
@@ -333,19 +339,19 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
             // Files
             Text(
-              'Tệp đính kèm',
+              AppLocalizations.of(context)!.attachments,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Column(
               children: files.isEmpty
-                  ? [const Text('Chưa có tệp đính kèm')]
+                  ? [Text(AppLocalizations.of(context)!.no_attachments)]
                   : files.map((f) {
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.insert_drive_file),
-                  title: Text(f['name'] ?? 'Tên file'),
-                  subtitle: Text('${f['size'] ?? ''} bytes'),
+                  title: Text(f['name'] ?? 'File Name'),
+                  subtitle: Text(formatBytes(f['size'] ?? 0, 2)),
                   onTap: () {
                     // TODO: mở file
                   },
@@ -360,7 +366,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                     final result = await FilePicker.platform.pickFiles();
 
                     if (result != null && result.files.isNotEmpty) {
-                      debugPrint('FilePicker result: $result');
+                      //debugPrint('FilePicker result: $result');
                       selectedFile = File(result.files.first.path!);
                       // Mặc định tên file gốc
                       fileNameController.text = result.files.first.name.split('.').first;
@@ -368,16 +374,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                     }
                   },
                   icon: const Icon(Icons.attach_file),
-                  label: const Text('Chọn tệp'),
+                  label:Text(AppLocalizations.of(context)!.select_file),
                 ),
                 if (selectedFile != null) ...[
                   TextField(
                     controller: fileNameController,
-                    decoration: const InputDecoration(labelText: 'Tên file (tùy chọn)'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.file_name_optional),
                   ),
                   TextField(
                     controller: fileDescController,
-                    decoration: const InputDecoration(labelText: 'Mô tả (tùy chọn)'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(context)!.description_optional),
                   ),
                   ElevatedButton.icon(
                     onPressed: () async {
@@ -389,7 +395,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       );
                     },
                     icon: const Icon(Icons.upload_file),
-                    label: const Text('Tải lên'),
+                    label: Text(AppLocalizations.of(context)!.upload),
                   ),
                 ]
               ],

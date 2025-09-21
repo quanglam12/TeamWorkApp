@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'l10n/app_localizations.dart';
 
 class FileDetailPage extends StatefulWidget {
   final String fileUrl;
@@ -75,7 +76,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
       _fileExists = false;
     } catch (e) {
       _fileExists = false;
-      debugPrint('Lỗi check file: $e');
+      //debugPrint('Lỗi check file: $e');
     }
     setState(() => _isLoading = false);
   }
@@ -90,7 +91,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
       if (!status.isGranted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Bạn chưa cấp quyền lưu trữ')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.storage_permission_denied)),
           );
         }
         return;
@@ -111,7 +112,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Bắt đầu tải: $fileName')));
+            .showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.download_start}: $fileName')));
       }
 
       await dio.download(
@@ -128,8 +129,8 @@ class _FileDetailPageState extends State<FileDetailPage> {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Đang tải: ${percent.toInt()}%'),
-                    duration: const Duration(milliseconds: 10),
+                    content: Text('${AppLocalizations.of(context)!.downloading}: ${percent.toInt()}%'),
+                    duration: const Duration(milliseconds: 1),
                   ),
                 );
               }
@@ -141,7 +142,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đã tải xuống: $savePath')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.download_completed}: $savePath')),
         );
       }
     } catch (e) {
@@ -149,7 +150,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tải file thất bại: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.download_failed}: $e')),
         );
       }
     }
@@ -163,14 +164,14 @@ class _FileDetailPageState extends State<FileDetailPage> {
     if (_isLoading) {
       body = const Center(child: CircularProgressIndicator());
     } else if (_fileExists == false) {
-      body = const Center(child: Text('Không tìm thấy file hoặc URL không hợp lệ'));
+      body = Center(child: Text(AppLocalizations.of(context)!.file_not_found));
     } else if (isImage) {
       body = Center(
         child: Image.network(
           widget.fileUrl,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
-            return const Text('Không thể hiển thị hình ảnh');
+            return Text(AppLocalizations.of(context)!.image_not_displayed);
           },
         ),
       );
@@ -197,7 +198,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
         ],
       );
     }*/ else {
-      body = const Center(child: Text('Loại file này chưa được hỗ trợ hiển thị'));
+      body = Center(child: Text(AppLocalizations.of(context)!.file_type_not_supported));
     }
 
     return Scaffold(
@@ -219,7 +220,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    'Đang tải: ${(downloadProgress * 100).toStringAsFixed(0)}%',
+                    '${AppLocalizations.of(context)!.loading}: ${(downloadProgress * 100).toStringAsFixed(0)}%',
                   ),
                 ),
               ],
