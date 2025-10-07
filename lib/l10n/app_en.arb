@@ -165,6 +165,7 @@
   "file_not_found": "File not found",
   "image_not_displayed": "Image cannot be displayed",
   "file_type_not_supported": "This file type is not supported for display",
+  "dashboard": "Dash board",
 
   "errorMessage": "Error: {error}",
   "@errorMessage": {

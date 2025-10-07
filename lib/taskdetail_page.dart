@@ -9,6 +9,7 @@ import 'package:teamworkapp/l10n/app_localizations.dart';
 
 import 'constants.dart';
 import 'auth_provider.dart';
+import 'filedetail_page.dart';
 
 class TaskDetailPage extends StatefulWidget {
   final Map<String, dynamic> task;
@@ -26,6 +27,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   List<Map<String, dynamic>> comments = [];
   List<Map<String, dynamic>> files = [];
   double? status;
+  double? aiSuggestedStatus;
   final String baseUrl = AppConstants.apiBaseUrl;
   String? get token => context.read<AuthProvider>().token;
 
@@ -34,6 +36,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   File? selectedFile;
   final TextEditingController fileNameController = TextEditingController();
   final TextEditingController fileDescController = TextEditingController();
+
 
   @override
   void initState() {
@@ -86,6 +89,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       if (res.statusCode == 201) {
         final data = jsonDecode(res.body);
         if (data['status'] == true) {
+          await predictAIProgress(comment: text);
           setState(() {
             _isEditingStatus = true;
           });
@@ -150,6 +154,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           setState(() {
             status = newStatus;
           });
+          setState(() {
+            aiSuggestedStatus = null;
+          });
         }
       } else {
         debugPrint('Update status failed: ${res.body}');
@@ -175,6 +182,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data['status'] == true) {
+          await predictAIProgress(file: file);
           // cập nhật danh sách file
           setState(() {
             _isEditingStatus = true;
@@ -191,6 +199,44 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       debugPrint('Error uploadFile: $e');
     }
   }
+
+  Future<void> predictAIProgress({String? comment, File? file}) async {
+    try {
+      final aiUri = Uri.parse('${AppConstants.urlPython}/predict'); // nếu bạn chạy local
+      final aiPayload = {
+        'current_status': status?.toInt() ?? 0,
+        'comment': comment ?? '',
+        'priority': task['priority'] ?? 'Normal',
+        'days_to_deadline': task['days_to_deadline'] ?? 0,
+        'file_path': file?.path ?? '',
+        'file_size_mb': file != null ? (await file.length()) / 1024 / 1024 : 0,
+      };
+
+      final aiRes = await http.post(
+        aiUri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(aiPayload),
+      );
+
+      if (aiRes.statusCode == 200) {
+        final pred = jsonDecode(aiRes.body)['predicted_status'];
+        setState(() {
+          aiSuggestedStatus = pred;
+          status = pred;
+        });
+        if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('AI gợi ý tiến độ: ${pred.toStringAsFixed(1)}%')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('AI prediction failed: $e');
+    }
+  }
+
+
   String formatBytes(int bytes, int decimals) {
     if (bytes <= 0) return "0 B";
     const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
@@ -253,6 +299,12 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               }
                   : null,
             ),
+            if (aiSuggestedStatus != null)
+              Text(
+                'AI gợi ý: ${aiSuggestedStatus!.toStringAsFixed(1)}%',
+                style: TextStyle(color: Colors.blueAccent),
+              ),
+
             IconButton(
               icon: Icon(_isEditingStatus ? Icons.lock_open : Icons.lock),
               onPressed: () {
@@ -353,7 +405,12 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   title: Text(f['name'] ?? 'File Name'),
                   subtitle: Text(formatBytes(f['size'] ?? 0, 2)),
                   onTap: () {
-                    // TODO: mở file
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FileDetailPage(fileUrl: '${AppConstants.apiBaseUrl}/storage/${f['path']}', name: f['name'],), // đường dẫn đầy đủ
+                      ),
+                    );
                   },
                 );
               }).toList(),

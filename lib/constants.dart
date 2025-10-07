@@ -1,11 +1,6 @@
 class AppConstants {
-  static String _ngrokId = "b5e012b7cce2";
 
-  static String get ngrokId => _ngrokId;
-
-  static void setNgrokId(String id) {
-    _ngrokId = id;
-  }
-
-  static String get apiBaseUrl => "https://$_ngrokId.ngrok-free.app";
+  static String get apiBaseUrl => "https://laravel.maivanquanglam.id.vn";
+  static String get urlPython => "https://python.maivanquanglam.id.vn";
+  static String get urlDocker => "https://samual-semipostal-immunologically.ngrok-free.dev";
 }

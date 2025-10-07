@@ -6,15 +6,12 @@ import 'l10n/app_localizations.dart';
 import 'auth.dart';
 import 'auth_provider.dart';
 import 'editprofile_page.dart';
-import 'constants.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController controller =
-    TextEditingController(text: AppConstants.ngrokId);
     final settings = Provider.of<SettingsProvider>(context);
     final auth = Provider.of<AuthProvider>(context);
     final loc = AppLocalizations.of(context)!;
@@ -100,25 +97,7 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                   ],
-                  TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      labelText: 'Ngrok ID',
-                      hintText: 'Ví dụ: ${AppConstants.ngrokId}',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      AppConstants.setNgrokId(controller.text);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Đã lưu ngrok ID mới')),
-                      );
-                    },
-                    child: Text(loc.save),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('URL hiện tại: ${AppConstants.apiBaseUrl}'),
+
                 ],
               ),
             ),

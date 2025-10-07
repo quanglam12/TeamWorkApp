@@ -1067,6 +1067,12 @@ abstract class AppLocalizations {
   /// **'This file type is not supported for display'**
   String get file_type_not_supported;
 
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dash board'**
+  String get dashboard;
+
   /// Display generic error message with parameter
   ///
   /// In en, this message translates to:

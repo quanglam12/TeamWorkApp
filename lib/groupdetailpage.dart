@@ -13,6 +13,7 @@ import 'constants.dart';
 import 'auth_provider.dart';
 import 'taskdetail_page.dart';
 import 'filedetail_page.dart';
+import 'group_dashboard.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final int groupId;
@@ -260,11 +261,18 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                 itemBuilder: (context, index) {
                   final m = members[index];
                   final user = m['user'];
-                  final avatarUrl =
-                      '${AppConstants.apiBaseUrl}/storage/${user['avturl'] ?? 'avatars/default.png'}';
+                  final String? avtUrl = user['avturl'];
+
+                  ImageProvider<Object> avatarImage;
+                  if (avtUrl != null && avtUrl.isNotEmpty) {
+                    final String avatarUrl = '${AppConstants.apiBaseUrl}/storage/$avtUrl';
+                    avatarImage = NetworkImage(avatarUrl);
+                  } else {
+                    avatarImage = const AssetImage('assets/images/avtUdefault.png');
+                  }
 
                   return ListTile(
-                    leading: CircleAvatar(backgroundImage: NetworkImage(avatarUrl)),
+                    leading: CircleAvatar(backgroundImage: avatarImage),
                     title: Text(user['name'] ?? ''),
                     subtitle: Text(m['role'] ?? ''),
                     trailing: isAdmin && m['role'] != 'admin'
@@ -381,7 +389,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                                     Flexible(
                                       flex: 2, // nhỏ hơn
                                       child: DropdownButtonFormField<String>(
-                                        value: member['role'],
+                                        initialValue: member['role'],
                                         decoration: InputDecoration(
                                           labelText: AppLocalizations.of(context)!.role,
                                           border: OutlineInputBorder(),
@@ -579,7 +587,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
         return AlertDialog(
           title: Text(AppLocalizations.of(context)!.change_role_for_member(member['user']['name'])),
           content: DropdownButtonFormField<String>(
-            value: selectedRole,
+            initialValue: selectedRole,
             onChanged: (value) {
               selectedRole = value;
             },
@@ -845,6 +853,10 @@ class _GroupDetailPageState extends State<GroupDetailPage>
             value: 'members',
             child: Text(AppLocalizations.of(context)!.manageMembers),
           ),
+          PopupMenuItem(
+            value: 'dashboard',
+            child: Text(AppLocalizations.of(context)!.dashboard),
+          ),
           const PopupMenuDivider(),
           PopupMenuItem(
             value: 'pin',
@@ -864,6 +876,10 @@ class _GroupDetailPageState extends State<GroupDetailPage>
           PopupMenuItem(
             value: 'members',
             child: Text(AppLocalizations.of(context)!.manageMembers),
+          ),
+          PopupMenuItem(
+            value: 'dashboard',
+            child: Text(AppLocalizations.of(context)!.dashboard),
           ),
           const PopupMenuDivider(),
           PopupMenuItem(
@@ -909,6 +925,14 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                     context,
                     data['members'] ?? [],
                     isAdmin,
+                  );
+                  break;
+                case 'dashboard':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GroupStatsScreen(groupData: groupData),
+                    ),
                   );
                   break;
                 case 'pin':
@@ -1195,7 +1219,7 @@ class _TasksTabState extends State<TasksTab> {
                     decoration: InputDecoration(labelText: AppLocalizations.of(context)!.description),
                   ),
                   DropdownButtonFormField<String>(
-                    value: selectedPriority,
+                    initialValue: selectedPriority,
                     items: [
                       DropdownMenuItem(value: 'high', child: Text(AppLocalizations.of(context)!.priority_high)),
                       DropdownMenuItem(
@@ -1441,7 +1465,7 @@ class _TasksTabState extends State<TasksTab> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: priority,
+                    initialValue: priority,
                     decoration: InputDecoration(labelText: AppLocalizations.of(context)!.priority),
                     items: [
                       DropdownMenuItem(value: 'low', child: Text(AppLocalizations.of(context)!.priority_low)),
@@ -1962,15 +1986,21 @@ class ChatTab extends StatefulWidget {
 }
 
 class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
+  final ScrollController _scrollController = ScrollController();
   List<dynamic> _messages = [];
   final TextEditingController _controller = TextEditingController();
   Timer? _timer;
+  bool _isFetchingMore = false;
+  bool _hasMore = true;
+  int? _nextBeforeId;
 
+  final int _pageSize = 20;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _fetchMessages();
+    _scrollController.addListener(_onScroll);
     // polling 3s/lần (tạm thời)
     _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages());
   }
@@ -1980,6 +2010,7 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _controller.clear();
+    _scrollController.dispose();
     super.dispose();
   }
   @override
@@ -1999,24 +2030,79 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
   void _stopPolling() {
     _timer?.cancel();
   }
-  Future<void> _fetchMessages() async {
+  Future<void> _fetchMessages({bool older = false}) async {
+    if (older && (_isFetchingMore || !_hasMore)) return;
+
+    setState(() {
+      if (older) _isFetchingMore = true;
+    });
+
     final token = context.read<AuthProvider>().token;
+    final params = older && _nextBeforeId != null
+        ? '?limit=$_pageSize&before_id=$_nextBeforeId'
+        : '?limit=$_pageSize';
+
     final res = await http.get(
-      Uri.parse('${AppConstants.apiBaseUrl}/api/chats/${widget.chatId}/messages'),
+      Uri.parse('${AppConstants.apiBaseUrl}/api/chats/${widget.chatId}/messages$params'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
     );
+
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       if (data['status'] == true) {
-        if(mounted) {
+        final newMessages = List<Map<String, dynamic>>.from(data['messages']);
+        final meta = data['meta'] ?? {};
+
+        if (older) {
+          // giữ offset trước khi prepend
+          final oldMaxExtent = _scrollController.position.maxScrollExtent;
           setState(() {
-            _messages = data['messages'];
+            _messages.insertAll(0, newMessages);
+            _hasMore = meta['has_more'] ?? false;
+            _nextBeforeId = meta['next_before'];
+          });
+
+          // sau khi render xong thì nhảy lại vị trí cũ
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final newMaxExtent = _scrollController.position.maxScrollExtent;
+            final delta = newMaxExtent - oldMaxExtent;
+            _scrollController.jumpTo(_scrollController.position.pixels + delta);
+          });
+        } else {
+          // load lần đầu
+          setState(() {
+            _messages = newMessages;
+            _hasMore = meta['has_more'] ?? false;
+            _nextBeforeId = meta['next_before'];
+          });
+
+          // cuộn xuống đáy ngay sau frame render
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.jumpTo(0); // reverse:true nên 0 là đáy
+            }
           });
         }
       }
+    }
+
+    if (older) {
+      setState(() {
+        _isFetchingMore = false;
+      });
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    // reverse:true => đầu list = maxScrollExtent
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 100) {
+      // user kéo lên gần đầu list
+      _fetchMessages(older: true);
     }
   }
 
@@ -2044,19 +2130,40 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
   @override
   Widget build(BuildContext context) {
     final currentUserId = context.read<AuthProvider>().userId;
+
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
+            controller: _scrollController,
+            reverse: true, // newest ở đáy
             padding: const EdgeInsets.all(8),
-            itemCount: _messages.length,
+            itemCount: _messages.length + 1, // +1 cho loader top
             itemBuilder: (context, index) {
+              if (index == _messages.length) {
+                // loader ở đầu list
+                if (_isFetchingMore) {
+                  return const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (!_hasMore) {
+                  return const SizedBox.shrink(); // hết tin cũ
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }
+
               final msg = _messages[index];
               final isMine = msg['sender_id'] == currentUserId;
+
               return Align(
-                alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+                alignment:
+                isMine ? Alignment.centerRight : Alignment.centerLeft,
                 child: Column(
-                  crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  crossAxisAlignment: isMine
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
                     Text(
                       msg['sender']['name'],
@@ -2067,15 +2174,20 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
                       textScaler: TextScaler.linear(0.8),
                     ),
                     Row(
-                      mainAxisAlignment: isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+                      mainAxisAlignment: isMine
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
                       children: [
                         if (!isMine)
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: CircleAvatar(
-                              backgroundImage: (msg['sender']['avturl'] != null)
-                                  ? NetworkImage('${AppConstants.apiBaseUrl}/storage/${msg['sender']['avturl']}')
-                                  : const AssetImage('assets/images/avtUdefault.png')
+                              backgroundImage:
+                              (msg['sender']['avturl'] != null)
+                                  ? NetworkImage(
+                                  '${AppConstants.apiBaseUrl}/storage/${msg['sender']['avturl']}')
+                                  : const AssetImage(
+                                  'assets/images/avtUdefault.png')
                               as ImageProvider,
                               radius: 16,
                             ),
@@ -2086,7 +2198,9 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
                           decoration: BoxDecoration(
                             color: isMine
                                 ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.surfaceContainerHighest,
+                                : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -2094,7 +2208,9 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
                             style: TextStyle(
                               color: isMine
                                   ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                                  : Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -2115,8 +2231,8 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.type_message_placeholder,
-                      border: OutlineInputBorder(),
+                      hintText: 'Nhập tin nhắn...',
+                      border: const OutlineInputBorder(),
                       isDense: true,
                     ),
                   ),

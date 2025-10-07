@@ -499,6 +499,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get file_type_not_supported => 'Loại file này chưa được hỗ trợ hiển thị';
 
   @override
+  String get dashboard => 'Thống kê';
+
+  @override
   String errorMessage(String error) {
     return 'Lỗi: $error';
   }

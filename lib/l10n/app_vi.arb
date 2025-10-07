@@ -165,6 +165,7 @@
   "file_not_found": "Không tìm thấy file",
   "image_not_displayed": "Không thể hiển thị hình ảnh",
   "file_type_not_supported": "Loại file này chưa được hỗ trợ hiển thị",
+  "dashboard": "Thống kê",
 
   "errorMessage": "Lỗi: {error}",
   "@errorMessage": {

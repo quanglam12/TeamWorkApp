@@ -499,6 +499,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get file_type_not_supported => 'This file type is not supported for display';
 
   @override
+  String get dashboard => 'Dash board';
+
+  @override
   String errorMessage(String error) {
     return 'Error: $error';
   }
