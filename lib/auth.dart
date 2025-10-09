@@ -30,12 +30,16 @@ class _AuthPageState extends State<AuthPage> {
   String? _nameError;
   String? _confirmPasswordError;
   String _passwordHint = "";
+  bool _isLoading = false;
+
 
 
   bool _isLogin = true; // true = login, false = register
   bool _rememberMe = false;
 
   Future<void> _submit() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
     try {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
@@ -127,7 +131,7 @@ class _AuthPageState extends State<AuthPage> {
           }),
         );
 
-        if (response.statusCode != 200) {
+        if (response.statusCode != 200 && response.statusCode != 201) {
           if (mounted) {
             final data = jsonDecode(utf8.decode(response.bodyBytes));
             final errorMessage = data['error'] ?? 'Có lỗi xảy ra';
@@ -166,6 +170,9 @@ class _AuthPageState extends State<AuthPage> {
               AppLocalizations.of(context)!.errorMessage(e.toString()))),
         );
       }
+    }
+    finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -431,7 +438,7 @@ class _AuthPageState extends State<AuthPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _submit,
+                      onPressed: _isLoading ? null : _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cs.primary,
                         foregroundColor: cs.onPrimary,
@@ -440,7 +447,23 @@ class _AuthPageState extends State<AuthPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: _isLoading
+                          ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(AppLocalizations.of(context)!.loading),
+                        ],
+                      )
+                          : Text(
                         _isLogin
                             ? AppLocalizations.of(context)!.login
                             : AppLocalizations.of(context)!.register,
