@@ -36,7 +36,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   File? selectedFile;
   final TextEditingController fileNameController = TextEditingController();
   final TextEditingController fileDescController = TextEditingController();
-
+  bool _isLoadingAI = false;
 
   @override
   void initState() {
@@ -201,8 +201,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   }
 
   Future<void> predictAIProgress({String? comment, File? file}) async {
+    setState(() {
+      _isLoadingAI = true;
+    });
     try {
-      final aiUri = Uri.parse('${AppConstants.urlPython}/predict'); // nếu bạn chạy local
+      final aiUri = Uri.parse('${AppConstants.urlPython}/predict');
       final aiPayload = {
         'current_status': status?.toInt() ?? 0,
         'comment': comment ?? '',
@@ -234,6 +237,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     } catch (e) {
       debugPrint('AI prediction failed: $e');
     }
+    setState(() {
+      _isLoadingAI = false;
+    });
   }
 
 
@@ -305,16 +311,41 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 style: TextStyle(color: Colors.blueAccent),
               ),
 
-            IconButton(
-              icon: Icon(_isEditingStatus ? Icons.lock_open : Icons.lock),
-              onPressed: () {
-                if (_isEditingStatus) {
-                  updateStatus(status!);
-                  setState(() {
-                    _isEditingStatus = false;
-                  });
-                }
-              },
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(_isEditingStatus ? Icons.lock_open : Icons.lock),
+                  onPressed: () async {
+                    if (_isEditingStatus) {
+                      setState(() {
+                        _isLoadingAI = true;
+                      });
+
+                      await updateStatus(status!);
+
+                      setState(() {
+                        _isEditingStatus = false;
+                        _isLoadingAI = false;
+                      });
+                    }
+                  },
+                ),
+
+                // Hiển thị loading nhỏ khi đang gọi AI
+                if (_isLoadingAI)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4.0),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const Divider(),
 

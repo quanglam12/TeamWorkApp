@@ -6,13 +6,19 @@ import 'auth.dart';
 import 'auth_provider.dart';
 import 'homepage.dart';
 
+//import 'package:firebase_core/firebase_core.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //await Firebase.initializeApp();
   final authProvider = AuthProvider();
   await authProvider.loadSavedLogin();
+  await dotenv.load(fileName: ".env");
   runApp(
     MultiProvider(
       providers: [

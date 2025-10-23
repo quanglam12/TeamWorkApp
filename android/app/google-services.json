@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "425415006059",
+    "project_id": "teamwork-app-776f4",
+    "storage_bucket": "teamwork-app-776f4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425415006059:android:2a45616d4305748c4bde2e",
+        "android_client_info": {
+          "package_name": "com.example.teamworkapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAN7u__C48bHqCPD51s_UUyWAb4oVB6HPg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425415006059:android:d56baa81729389a44bde2e",
+        "android_client_info": {
+          "package_name": "teamwork.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAN7u__C48bHqCPD51s_UUyWAb4oVB6HPg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1992,6 +1992,7 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
   Timer? _timer;
   bool _isFetchingMore = false;
   bool _hasMore = true;
+  bool _ismessolder = false;
   int? _nextBeforeId;
 
   final int _pageSize = 20;
@@ -2002,7 +2003,7 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
     _fetchMessages();
     _scrollController.addListener(_onScroll);
     // polling 3s/lần (tạm thời)
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages());
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages(older: _ismessolder));
   }
 
   @override
@@ -2024,7 +2025,7 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
 
   void _startPolling() {
     _timer?.cancel(); // Đảm bảo không có timer nào đang chạy
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages());
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _fetchMessages(older: _ismessolder));
   }
 
   void _stopPolling() {
@@ -2082,7 +2083,7 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
           // cuộn xuống đáy ngay sau frame render
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_scrollController.hasClients) {
-              _scrollController.jumpTo(0); // reverse:true nên 0 là đáy
+              _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
             }
           });
         }
@@ -2097,17 +2098,19 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    // reverse:true => đầu list = maxScrollExtent
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 100) {
-      // user kéo lên gần đầu list
+    if (!_scrollController.hasClients || _isFetchingMore || !_hasMore) return;
+
+    // Kích hoạt khi người dùng cuộn gần đến đỉnh của danh sách
+    if (_scrollController.position.pixels <=
+        _scrollController.position.minScrollExtent + 100) {
+      _ismessolder = true;
       _fetchMessages(older: true);
     }
   }
 
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
+    _controller.clear();
     if (text.isEmpty) return;
 
     final token = context.read<AuthProvider>().token;
@@ -2122,8 +2125,7 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
     );
 
     if (res.statusCode == 201) {
-      _controller.clear();
-      _fetchMessages();
+      _fetchMessages(older: _ismessolder);
     }
   }
 
@@ -2136,25 +2138,26 @@ class ChatTabState extends State<ChatTab> with WidgetsBindingObserver{
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
-            reverse: true, // newest ở đáy
             padding: const EdgeInsets.all(8),
-            itemCount: _messages.length + 1, // +1 cho loader top
+            itemCount: _messages.length + 1,
             itemBuilder: (context, index) {
-              if (index == _messages.length) {
-                // loader ở đầu list
+              // 1. Đưa logic kiểm tra loader lên đầu, với index = 0
+              if (index == 0) {
                 if (_isFetchingMore) {
                   return const Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Center(child: CircularProgressIndicator()),
                   );
                 } else if (!_hasMore) {
-                  return const SizedBox.shrink(); // hết tin cũ
+                  return const Center(child: Text("Hết tin nhắn cũ")); // Có thể hiện thông báo
                 } else {
-                  return const SizedBox.shrink();
+                  return const SizedBox.shrink(); // Ẩn đi nếu không làm gì
                 }
               }
 
-              final msg = _messages[index];
+              // 2. Lấy tin nhắn với index đã được điều chỉnh (index - 1)
+              // Vì vị trí 0 đã dành cho loader
+              final msg = _messages[index - 1];
               final isMine = msg['sender_id'] == currentUserId;
 
               return Align(

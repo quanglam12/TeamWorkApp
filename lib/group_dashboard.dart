@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 
 import 'auth_provider.dart';
 import 'constants.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+
 
 class GroupStatsScreen extends StatefulWidget {
   final Map<String, dynamic>? groupData;
@@ -129,10 +133,14 @@ class _GroupStatsScreenState extends State<GroupStatsScreen> {
 
 
   Future<void> _evaluateWithAI() async {
+    BuildContext? dialogContext;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (ctx) {
+        dialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
     );
 
     try {
@@ -165,64 +173,125 @@ Bạn là chuyên gia đánh giá hiệu suất làm việc nhóm.
 Dựa vào tóm tắt dữ liệu bên dưới, hãy:
 1. Đánh giá tiến độ chung của nhóm
 2. Nhận xét mức độ chủ động của từng thành viên
-3. Đề xuất cải thiện
+3. Đề xuất cải thiện (cụ thể nhưng ngắn gọn)
 
 Dữ liệu:
 $summary
 ''';
 
-      // --- Gọi LocalAI ---
+      // --- Gọi Groq API ---
       final aiResponse = await http.post(
-        Uri.parse('${AppConstants.urlDocker}/v1/chat/completions'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse(AppConstants.groqApiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${dotenv.env['GROQ_API_KEY']}',
+        },
         body: jsonEncode({
-          "model": "gpt-4o", // hoặc Meta-Llama-3.1-8B-Instruct-Q8_0.gguf
-          "messages": [
-            {"role": "system", "content": "Bạn là chuyên gia đánh giá tiến độ công việc."},
-            {"role": "user", "content": prompt}
-          ],
-          "temperature": 0.7
+          "model": "llama-3.1-8b-instant",
+          "input": prompt,
         }),
-      ).timeout(const Duration(minutes: 10));
-      if(mounted) {
-        Navigator.of(context).pop(); // tắt loading
+      ).timeout(const Duration(minutes: 2));
+
+      if(context.mounted) {
+        if (dialogContext != null && Navigator.canPop(dialogContext!)) {
+          Navigator.pop(dialogContext!);
+        }
       }
       if (aiResponse.statusCode == 200) {
         final result = jsonDecode(aiResponse.body);
-        final aiText = result['choices'][0]['message']['content'];
+        // --- Xử lý dữ liệu phản hồi từ Groq / LocalAI ---
+        final outputList = result['output'] as List?;
+        String aiText = 'Không có phản hồi';
 
-        // Hiển thị kết quả
-        if(mounted) {
+        if (outputList != null && outputList.isNotEmpty) {
+          final messagePart = outputList.firstWhere(
+                (item) => item['type'] == 'message',
+            orElse: () => null,
+          );
+          if (messagePart != null) {
+            final contentList = messagePart['content'] as List?;
+            if (contentList != null && contentList.isNotEmpty) {
+              aiText = contentList
+                  .firstWhere(
+                    (c) => c['type'] == 'output_text',
+                orElse: () => null,
+              )?['text'] ??
+                  'Không có phản hồi';
+            }
+            print(result);
+          }
+        }
+
+        // --- Hiển thị hộp thoại theo theme ---
+        if (mounted) {
+          final theme = Theme.of(context);
+          final textTheme = theme.textTheme;
+
           showDialog(
             context: context,
-            builder: (_) =>
-                AlertDialog(
-                  title: const Text("Đánh giá của AI"),
-                  content: SingleChildScrollView(
-                      child: Text(aiText ?? 'Không có phản hồi')),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Đóng"),
+            builder: (_) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(Icons.analytics_outlined, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text("Đánh giá của AI", style: textTheme.titleMedium),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  // Hiển thị Markdown (đậm, danh sách, v.v.)
+                  child: MarkdownBody(
+                    data: aiText,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                      p: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+                      strong: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                      listBullet: theme.textTheme.bodyMedium,
                     ),
-                  ],
+                  ),
                 ),
+              ),
+              actions: [
+                TextButton.icon(
+                  icon: const Icon(Icons.copy, size: 18),
+                  label: const Text("Sao chép"),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: aiText));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Đã sao chép nội dung")),
+                    );
+                  },
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Đóng"),
+                ),
+              ],
+            ),
           );
         }
       } else {
-        print("❌ Lỗi khi gọi AI API:");
-        print("Status code: ${aiResponse.statusCode}");
-        print("Headers: ${aiResponse.headers}");
-        print("Body: ${aiResponse.body}");
-
         throw Exception("AI trả về lỗi: ${aiResponse.body}");
       }
     } catch (e) {
-      if(mounted) {
-        Navigator.of(context).pop(); // tắt loading
+      if(context.mounted) {
+        if (dialogContext != null && Navigator.canPop(dialogContext!)) {
+          Navigator.pop(dialogContext!);
+        }
+        if(mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Lỗi: $e")),
         );
+        }
       }
     }
   }
